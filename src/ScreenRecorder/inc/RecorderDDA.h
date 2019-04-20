@@ -20,14 +20,14 @@ class RecorderDDA : public Recorder
         ~RecorderDDA ();
 
         int InitResources ();
-        int GetScreenShot (int maxAttempts, unsigned char *frameBuffer, int *width, int *height);
+        int GetScreenShot (unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height);
         int StartVideoRecording (const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform);
         int StopVideoRecording ();
 
     private:
 
         int FreeResources ();
-        int GetScreenShotOfDisplay (int maxAttempts, ID3D11Texture2D **desktopTexture, unsigned int displayNum);
+        int GetScreenShotOfDisplay (unsigned int maxAttempts, ID3D11Texture2D **desktopTexture, unsigned int displayNum);
         bool CheckWindowOnDisplay (const RECT& display, const RECT& processRect);
         int GetProcessWindow (RECT *rc, int *processDisplay);
         int GetImageFromTexture (ID3D11Texture2D *destImage, int displayNum, RECT rcWind, volatile unsigned char *frameBuffer, volatile int *width, volatile int *height);
@@ -44,7 +44,7 @@ class RecorderDDA : public Recorder
         MFEncoder *mfenc;
         int totalDisplays;
 
-        volatile int screenMaxAttempts;
+        volatile unsigned int screenMaxAttempts;
         volatile unsigned char *imageBuffer;
         volatile int *imageWidth;
         volatile int *imageBufferWidth;

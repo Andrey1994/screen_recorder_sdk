@@ -41,7 +41,7 @@ int InitResources (int pid)
     return STATUS_OK;
 }
 
-int GetScreenShot (int maxAttempts, unsigned char *frameBuffer, int *width, int *height)
+int GetScreenShot (unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height)
 {
     if (!recorder)
         return SESSION_NOT_CREATED_ERROR;

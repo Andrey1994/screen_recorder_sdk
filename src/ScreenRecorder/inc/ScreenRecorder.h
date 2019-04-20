@@ -22,7 +22,7 @@ typedef enum
 
 extern "C" {
     __declspec(dllexport) int InitResources (int pid);
-    __declspec(dllexport) int GetScreenShot (int maxAttempts, unsigned char *frameBuffer, int *width, int *height);
+    __declspec(dllexport) int GetScreenShot (unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height);
     __declspec(dllexport) int FreeResources ();
     __declspec(dllexport) int SetLogLevel (int level);
     __declspec(dllexport) int GetPID (int *pid);

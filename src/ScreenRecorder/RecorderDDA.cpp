@@ -124,7 +124,7 @@ int RecorderDDA::FreeResources ()
         return STATUS_OK;
 }
 
-int RecorderDDA::GetScreenShot (int maxAttempts, unsigned char *frameBuffer, int *width, int *height)
+int RecorderDDA::GetScreenShot (unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height)
 {
     if (CheckThreadAlive ())
     {
@@ -167,7 +167,7 @@ int RecorderDDA::StartVideoRecording (const char *outputFileName, int frameRate,
         this->bitRate = bitRate;
         this->useHardwareTransform = useHardwareTransform;
         // sync StopVideoRecording and StartVideoRecording are called without delay
-        bool waitRes = SleepConditionVariableCS (&condVar, &critSect, this->screenMaxAttempts * 2000);
+        bool waitRes = SleepConditionVariableCS (&condVar, &critSect, 2000);
         Recorder::recordLogger->trace ("wait res for start video is {}", waitRes);
         LeaveCriticalSection (&critSect);
         return STATUS_OK;
@@ -186,7 +186,7 @@ int RecorderDDA::StopVideoRecording () {
         this->bitRate = 0;
         this->useHardwareTransform = FALSE;
         // sync StopVideoRecording and StartVideoRecording are called without delay
-        bool waitRes = SleepConditionVariableCS (&condVar, &critSect, this->screenMaxAttempts * 2000);
+        bool waitRes = SleepConditionVariableCS (&condVar, &critSect, 2000);
         Recorder::recordLogger->trace ("wait res for stop video is {}", waitRes);
         LeaveCriticalSection (&critSect);
         return STATUS_OK;
@@ -337,6 +337,7 @@ void RecorderDDA::WorkerThread ()
             // start recording video
             if (!isRecording)
             {
+                WakeConditionVariable (&condVar);
                 Recorder::recordLogger->trace ("starting video recording");
                 if (mfenc != NULL)
                 {
@@ -358,7 +359,6 @@ void RecorderDDA::WorkerThread ()
                     Recorder::recordLogger->info ("Start recording video to {}", (char *)this->videoFileName);
                 }
                 LeaveCriticalSection (&critSect);
-                WakeConditionVariable (&condVar);
             }
             // add frame
             else
@@ -382,17 +382,18 @@ void RecorderDDA::WorkerThread ()
             // stop recording video
             if (isRecording)
             {
+                WakeConditionVariable (&condVar);
                 Recorder::recordLogger->info ("Stop recording video");
                 delete mfenc;
                 mfenc = NULL;
                 isRecording = FALSE;
-                WakeConditionVariable (&condVar);
             }
         }
     }
     // sanity check
     if (mfenc)
     {
+        WakeConditionVariable (&condVar);
         Recorder::recordLogger->info ("Stop recording video");
         delete mfenc;
         mfenc = NULL;
@@ -631,7 +632,7 @@ int RecorderDDA::PrepareSession ()
     return STATUS_OK;
 }
 
-int RecorderDDA::GetScreenShotOfDisplay (int maxAttempts, ID3D11Texture2D **desktopTexture, unsigned int displayNum)
+int RecorderDDA::GetScreenShotOfDisplay (unsigned int maxAttempts, ID3D11Texture2D **desktopTexture, unsigned int displayNum)
 {
     HRESULT hr (E_FAIL);
     ID3D11Texture2D *acquiredImage = NULL;

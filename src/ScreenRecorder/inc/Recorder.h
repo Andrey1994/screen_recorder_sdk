@@ -14,7 +14,7 @@ class Recorder
         virtual ~Recorder (){}
 
         virtual int InitResources () = 0;
-        virtual int GetScreenShot (int maxAttempts, unsigned char *frameBuffer, int *width, int *height) = 0;
+        virtual int GetScreenShot (unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height) = 0;
 
         virtual int StartVideoRecording (const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform) = 0;
         virtual int StopVideoRecording () = 0;

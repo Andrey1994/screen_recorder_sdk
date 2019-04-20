@@ -2,6 +2,7 @@ import os
 import ctypes
 import numpy
 import enum
+import platform
 from numpy.ctypeslib import ndpointer
 import pkg_resources
 from PIL import Image
@@ -22,6 +23,8 @@ class ScreenRecorderDLL (object):
     @classmethod
     def get_instance (cls):
         if cls.__instance is None:
+            if platform.system () != 'Windows':
+                raise Exception ("For now only Windows is supported, detected platform is %s" % platform.system ())
             cls.__instance = cls ()
         return cls.__instance
 
@@ -38,7 +41,7 @@ class ScreenRecorderDLL (object):
         self.GetScreenShot = self.lib.GetScreenShot
         self.GetScreenShot.restype = ctypes.c_int
         self.GetScreenShot.argtypes = [
-            ctypes.c_int,
+            ctypes.c_uint,
             ndpointer (ctypes.c_ubyte),
             ndpointer (ctypes.c_int64),
             ndpointer (ctypes.c_int64)
