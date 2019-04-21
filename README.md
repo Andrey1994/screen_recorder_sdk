@@ -7,6 +7,10 @@ For screenshots it cuts process window from desktop while for videos it captures
 
 *DDA works stable only for Windows >= 10 also you need 64bit Python*
 
+## Build Status
+*Windows(AppVeyor)
+[![Build status](https://ci.appveyor.com/api/projects/status/3wnq5b1ipackukbc/branch/master?svg=true)](https://ci.appveyor.com/project/Andrey1994/screen-recorder-sdk/branch/master)
+
 ## Installation
 
 First option is:
