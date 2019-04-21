@@ -5,7 +5,7 @@ I use [Desktop Duplication API](https://docs.microsoft.com/en-us/windows/desktop
 
 For screenshots it cuts process window from desktop while for videos it captures full display without cutting for better performance
 
-*DDA works stable only for Windows >= 10*
+*DDA works stable only for Windows >= 10 also you need 64bit Python*
 
 ## Installation
 
