@@ -3,6 +3,7 @@ import ctypes
 import numpy
 import enum
 import platform
+import struct
 from numpy.ctypeslib import ndpointer
 import pkg_resources
 from PIL import Image
@@ -25,6 +26,8 @@ class ScreenRecorderDLL (object):
         if cls.__instance is None:
             if platform.system () != 'Windows':
                 raise Exception ("For now only Windows is supported, detected platform is %s" % platform.system ())
+            if struct.calcsize ("P") * 8 != 64:
+                raise Exception ("You need 64-bit python to use this library")
             cls.__instance = cls ()
         return cls.__instance
 

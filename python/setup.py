@@ -7,7 +7,7 @@ with open (os.path.join (this_directory, 'README.md'), encoding = 'utf-8') as f:
 
 setup (
     name = 'screen_recorder_sdk',
-    version = '1.0.1',
+    version = '1.0.2',
     description = 'Library to take screenshots and record video from desktop',
     long_description = long_description,
     long_description_content_type = 'text/markdown',
