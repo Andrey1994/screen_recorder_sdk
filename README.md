@@ -37,7 +37,7 @@ from screen_recorder_sdk import screen_recorder
 
 def main ():
     screen_recorder.enable_dev_log ()
-    pid = int (sys.argv[1])
+    pid = int (sys.argv[1]) # pid == 0 means capture full screen
     screen_recorder.init_resources (pid)
 
     screen_recorder.get_screenshot (5).save ('test_before.png')
