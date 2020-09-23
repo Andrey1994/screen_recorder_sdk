@@ -17,8 +17,8 @@ import sys
 import subprocess
 
 sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath(os.path.join('..', 'python-package')))
-sys.path.insert(0, os.path.abspath(os.path.join('..', 'python-package', 'brainflow')))
+sys.path.insert(0, os.path.abspath(os.path.join('..', 'python')))
+sys.path.insert(0, os.path.abspath(os.path.join('..', 'python', 'screen_recorder_sdk')))
 
 # -- Project information -----------------------------------------------------
 

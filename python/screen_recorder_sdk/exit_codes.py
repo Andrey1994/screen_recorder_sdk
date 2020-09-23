@@ -2,6 +2,7 @@ import enum
 
 
 class RecorderExitCodes (enum.Enum):
+    """Enum to store all possible exit codes"""
 
     STATUS_OK = 0
     NO_SUCH_PROCESS_ERROR = 100
