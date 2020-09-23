@@ -1,14 +1,19 @@
 #include <windows.h>
 
-#include "ScreenRecorder.h"
 #include "Recorder.h"
 #include "RecorderDDA.h"
+#include "RecorderParams.h"
+#include "ScreenRecorder.h"
+
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 
 Recorder *recorder = NULL;
 HANDLE mutex = NULL;
 
-int InitResources (int pid)
+int InitResources (char *paramsString)
 {
     if (!mutex)
     {
@@ -20,17 +25,28 @@ int InitResources (int pid)
     }
     if (recorder)
     {
-        if (recorder->GetPID () == pid)
-            return STATUS_OK;
         delete recorder;
         recorder = NULL;
     }
 
-    recorder = new RecorderDDA (pid);
+    struct RecorderParams params;
+    try
+    {
+        json config = json::parse (std::string (paramsString));
+        params.pid = config["pid"];
+        params.desktopNum = config["desktop_num"];
+    }
+    catch (json::exception &e)
+    {
+        return JSON_ERROR;
+    }
+
+    recorder = new RecorderDDA (params);
     WaitForSingleObject (mutex, INFINITE);
     int res = recorder->InitResources ();
     ReleaseMutex (mutex);
-    if (res != STATUS_OK) {
+    if (res != STATUS_OK)
+    {
         delete recorder;
         recorder = NULL;
         CloseHandle (mutex);
@@ -54,7 +70,8 @@ int GetScreenShot (unsigned int maxAttempts, unsigned char *frameBuffer, int *wi
 
 int FreeResources ()
 {
-    if (recorder) {
+    if (recorder)
+    {
         if (mutex)
         {
             WaitForSingleObject (mutex, INFINITE);
@@ -78,13 +95,15 @@ int SetLogLevel (int level)
     return Recorder::SetLogLevel (level);
 }
 
-int StartVideoRecording (const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform)
+int StartVideoRecording (
+    const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform)
 {
     if (!recorder)
         return SESSION_NOT_CREATED_ERROR;
 
     WaitForSingleObject (mutex, INFINITE);
-    int res = recorder->StartVideoRecording (outputFileName, frameRate, bitRate, useHardwareTransform);
+    int res =
+        recorder->StartVideoRecording (outputFileName, frameRate, bitRate, useHardwareTransform);
     ReleaseMutex (mutex);
     return res;
 }

@@ -1,0 +1,11 @@
+sphinx==3.1.2
+breathe==4.19.2
+sphinx_rtd_theme
+brainflow
+pandas
+mne
+matplotlib
+ipykernel
+nbsphinx
+pandoc
+sphinxcontrib-ghcontributors

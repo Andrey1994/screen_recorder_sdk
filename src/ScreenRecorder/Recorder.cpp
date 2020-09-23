@@ -15,7 +15,6 @@ int Recorder::SetLogLevel (int level)
     return STATUS_OK;
 }
 
-Recorder::Recorder (int pid)
+Recorder::Recorder (struct RecorderParams recorderParams) : params (recorderParams)
 {
-    this->pid = pid;
 }

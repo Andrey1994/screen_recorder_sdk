@@ -18,16 +18,20 @@ typedef enum
     DDA_TIMEOUT_ERROR,
     SYNC_TIMEOUT_ERROR,
     GENERAL_ERROR,
+    JSON_ERROR
 } ExitCodes;
 
-extern "C" {
-    __declspec(dllexport) int InitResources (int pid);
-    __declspec(dllexport) int GetScreenShot (unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height);
+extern "C"
+{
+    __declspec(dllexport) int InitResources (char *paramsString);
+    __declspec(dllexport) int GetScreenShot (
+        unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height);
     __declspec(dllexport) int FreeResources ();
     __declspec(dllexport) int SetLogLevel (int level);
     __declspec(dllexport) int GetPID (int *pid);
 
-    __declspec(dllexport) int StartVideoRecording (const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform);
+    __declspec(dllexport) int StartVideoRecording (
+        const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform);
     __declspec(dllexport) int StopVideoRecording ();
 }
 

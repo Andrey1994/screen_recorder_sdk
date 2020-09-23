@@ -1,4 +1,3 @@
-import sys
 import time
 import numpy
 
@@ -7,8 +6,12 @@ from screen_recorder_sdk import screen_recorder
 
 def main ():
     screen_recorder.enable_dev_log ()
-    pid = int (sys.argv[1])
-    screen_recorder.init_resources (pid)
+    
+    params = screen_recorder.RecorderParams ()
+    # params.pid = 0 # use it to set process Id to capture
+    # params.desktop_num = 0 # use it to set desktop num, counting from 0
+
+    screen_recorder.init_resources (params)
 
     screen_recorder.get_screenshot (5).save ('test_before.png')
 

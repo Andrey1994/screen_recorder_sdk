@@ -1,3 +1,4 @@
+// clang-format off
 #include <dwmapi.h>
 #include <algorithm>
 #include <mfapi.h>
@@ -11,27 +12,22 @@
 #include "HandleD3DWindow.h"
 
 #pragma comment (lib, "D3D11.lib")
+// clang-format on
 
 #define MAX_DDA_INIT_TIME 20000
 
 
-const D3D_DRIVER_TYPE RecorderDDA::driverTypes[] =
-{
+const D3D_DRIVER_TYPE RecorderDDA::driverTypes[] = {
     D3D_DRIVER_TYPE_HARDWARE,
     D3D_DRIVER_TYPE_WARP,
     D3D_DRIVER_TYPE_REFERENCE,
 };
 
 // Feature levels supported
-const D3D_FEATURE_LEVEL RecorderDDA::featureLevels[] =
-{
-    D3D_FEATURE_LEVEL_11_0,
-    D3D_FEATURE_LEVEL_10_1,
-    D3D_FEATURE_LEVEL_10_0,
-    D3D_FEATURE_LEVEL_9_1
-};
+const D3D_FEATURE_LEVEL RecorderDDA::featureLevels[] = {
+    D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0, D3D_FEATURE_LEVEL_9_1};
 
-RecorderDDA::RecorderDDA (int pid) : Recorder (pid)
+RecorderDDA::RecorderDDA (struct RecorderParams recoderParams) : Recorder (recoderParams)
 {
     this->threadRes = SYNC_TIMEOUT_ERROR;
     this->imageBuffer = NULL;
@@ -124,7 +120,8 @@ int RecorderDDA::FreeResources ()
         return STATUS_OK;
 }
 
-int RecorderDDA::GetScreenShot (unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height)
+int RecorderDDA::GetScreenShot (
+    unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height)
 {
     if (CheckThreadAlive ())
     {
@@ -139,7 +136,8 @@ int RecorderDDA::GetScreenShot (unsigned int maxAttempts, unsigned char *frameBu
         this->imageWidth = width;
         this->imageHeight = height;
         this->screenMaxAttempts = maxAttempts;
-        SleepConditionVariableCS (&condVar, &critSect, maxAttempts * 4000); // 4 times bigger than capture timeout
+        SleepConditionVariableCS (
+            &condVar, &critSect, maxAttempts * 4000); // 4 times bigger than capture timeout
         this->needScreen = FALSE;
         int res = this->threadRes;
         threadRes = SYNC_TIMEOUT_ERROR;
@@ -150,7 +148,8 @@ int RecorderDDA::GetScreenShot (unsigned int maxAttempts, unsigned char *frameBu
         return threadRes;
 }
 
-int RecorderDDA::StartVideoRecording (const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform)
+int RecorderDDA::StartVideoRecording (
+    const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform)
 {
     if (CheckThreadAlive ())
     {
@@ -176,7 +175,8 @@ int RecorderDDA::StartVideoRecording (const char *outputFileName, int frameRate,
         return threadRes;
 }
 
-int RecorderDDA::StopVideoRecording () {
+int RecorderDDA::StopVideoRecording ()
+{
     if (CheckThreadAlive ())
     {
         Recorder::recordLogger->trace ("stop video recording is called");
@@ -197,7 +197,7 @@ int RecorderDDA::StopVideoRecording () {
 
 DWORD WINAPI RecorderDDA::CaptureThreadProc (LPVOID pRecorderDDA)
 {
-    ((RecorderDDA *) pRecorderDDA)->WorkerThread ();
+    ((RecorderDDA *)pRecorderDDA)->WorkerThread ();
     return 0;
 }
 
@@ -224,14 +224,14 @@ void RecorderDDA::WorkerThread ()
 
     int currentAttempt = 0;
     int maxAttempts = 7;
-    int displayNum = 0;
+    int displayNum = params.desktopNum;
     RECT rcWind;
     SetRect (&rcWind, 0, 0, 0, 0);
     int width = 0;
     int height = 0;
     bool isRecording = FALSE;
     ID3D11Texture2D *destImage = NULL;
-    if (pid)
+    if (params.pid)
     {
         if (GetProcessWindow (&rcWind, &displayNum) != STATUS_OK)
         {
@@ -241,8 +241,10 @@ void RecorderDDA::WorkerThread ()
             return;
         }
     }
-    width = outputDescs[displayNum].DesktopCoordinates.right - outputDescs[displayNum].DesktopCoordinates.left;
-    height = outputDescs[displayNum].DesktopCoordinates.bottom - outputDescs[displayNum].DesktopCoordinates.top;
+    width = outputDescs[displayNum].DesktopCoordinates.right -
+        outputDescs[displayNum].DesktopCoordinates.left;
+    height = outputDescs[displayNum].DesktopCoordinates.bottom -
+        outputDescs[displayNum].DesktopCoordinates.top;
     while (!threadMustExit)
     {
         if (destImage != NULL)
@@ -281,11 +283,12 @@ void RecorderDDA::WorkerThread ()
                 res = PrepareSession ();
                 if (res != STATUS_OK)
                 {
-                    Recorder::recordLogger->error ("Unable to reinit dda resources after DDA_LOST_ACCESS_ERROR or CREATE_TEXTURE_ERROR");
+                    Recorder::recordLogger->error ("Unable to reinit dda resources after "
+                                                   "DDA_LOST_ACCESS_ERROR or CREATE_TEXTURE_ERROR");
                     threadRes = res;
                     break;
                 }
-                if (pid)
+                if (params.pid)
                 {
                     if (GetProcessWindow (&rcWind, &displayNum) != STATUS_OK)
                     {
@@ -294,8 +297,10 @@ void RecorderDDA::WorkerThread ()
                         break;
                     }
                 }
-                width = outputDescs[displayNum].DesktopCoordinates.right - outputDescs[displayNum].DesktopCoordinates.left;
-                height = outputDescs[displayNum].DesktopCoordinates.bottom - outputDescs[displayNum].DesktopCoordinates.top;
+                width = outputDescs[displayNum].DesktopCoordinates.right -
+                    outputDescs[displayNum].DesktopCoordinates.left;
+                height = outputDescs[displayNum].DesktopCoordinates.bottom -
+                    outputDescs[displayNum].DesktopCoordinates.top;
                 // looks like there is a raise condition inside API, call it twice instead Sleep
                 // you will get a black image with correct exit code otherwise
                 res = GetScreenShotOfDisplay (1, &destImage, displayNum);
@@ -319,14 +324,17 @@ void RecorderDDA::WorkerThread ()
             if ((res == DDA_TIMEOUT_ERROR) && (currentAttempt < screenMaxAttempts))
             {
                 currentAttempt++;
-                Recorder::recordLogger->trace ("Unable to capture image for display {}, res {}", displayNum, res);
+                Recorder::recordLogger->trace (
+                    "Unable to capture image for display {}, res {}", displayNum, res);
                 continue;
             }
             EnterCriticalSection (&critSect);
             if (destImage)
-                threadRes = GetImageFromTexture (destImage, displayNum, rcWind, imageBuffer, imageWidth, imageHeight);
+                threadRes = GetImageFromTexture (
+                    destImage, displayNum, rcWind, imageBuffer, imageWidth, imageHeight);
             else
-                Recorder::recordLogger->error ("Unable to capture image for display {}, res {}", displayNum, threadRes);
+                Recorder::recordLogger->error (
+                    "Unable to capture image for display {}, res {}", displayNum, threadRes);
             currentAttempt = 0;
             needScreen = FALSE;
             LeaveCriticalSection (&critSect);
@@ -346,9 +354,11 @@ void RecorderDDA::WorkerThread ()
                     mfenc = NULL;
                 }
                 EnterCriticalSection (&critSect);
-                mfenc = new MFEncoder (this->bitRate, this->frameRate, (char *)this->videoFileName, MFVideoFormat_ARGB32, width, height);
+                mfenc = new MFEncoder (this->bitRate, this->frameRate, (char *)this->videoFileName,
+                    MFVideoFormat_ARGB32, width, height);
                 isRecording = TRUE;
-                HRESULT hr = mfenc->InitializeSinkWriter (deviceManager, this->useHardwareTransform);
+                HRESULT hr =
+                    mfenc->InitializeSinkWriter (deviceManager, this->useHardwareTransform);
                 if (FAILED (hr))
                 {
                     Recorder::recordLogger->error ("Could not init InitializeSinkWriter");
@@ -356,7 +366,8 @@ void RecorderDDA::WorkerThread ()
                 }
                 else
                 {
-                    Recorder::recordLogger->info ("Start recording video to {}", (char *)this->videoFileName);
+                    Recorder::recordLogger->info (
+                        "Start recording video to {}", (char *)this->videoFileName);
                 }
                 LeaveCriticalSection (&critSect);
             }
@@ -406,12 +417,13 @@ void RecorderDDA::WorkerThread ()
 
 int RecorderDDA::PrepareSession ()
 {
-    if (pid != 0)
+    if (params.pid != 0)
     {
-        HANDLE processHandle = OpenProcess (PROCESS_QUERY_INFORMATION, 0, pid);
+        HANDLE processHandle = OpenProcess (PROCESS_QUERY_INFORMATION, 0, params.pid);
         if (!processHandle)
         {
-            Recorder::recordLogger->error ("No such process {}, GetLastError is {}", pid, GetLastError());
+            Recorder::recordLogger->error (
+                "No such process {}, GetLastError is {}", params.pid, GetLastError ());
             return NO_SUCH_PROCESS_ERROR;
         }
         CloseHandle (processHandle);
@@ -422,18 +434,9 @@ int RecorderDDA::PrepareSession ()
 
     for (UINT driverTypeIndex = 0; driverTypeIndex < ARRAYSIZE (driverTypes); driverTypeIndex++)
     {
-        hr = D3D11CreateDevice (
-            NULL,
-            driverTypes[driverTypeIndex],
-            NULL,
-            D3D11_CREATE_DEVICE_VIDEO_SUPPORT,
-            featureLevels,
-            ARRAYSIZE (featureLevels),
-            D3D11_SDK_VERSION,
-            &device,
-            &featureLevel,
-            &immediateContext
-        );
+        hr = D3D11CreateDevice (NULL, driverTypes[driverTypeIndex], NULL,
+            D3D11_CREATE_DEVICE_VIDEO_SUPPORT, featureLevels, ARRAYSIZE (featureLevels),
+            D3D11_SDK_VERSION, &device, &featureLevel, &immediateContext);
 
         if (SUCCEEDED (hr))
         {
@@ -495,9 +498,7 @@ int RecorderDDA::PrepareSession ()
 
     // Get DXGI adapter
     IDXGIAdapter *dxgiAdapter = NULL;
-    hr = dxgiDevice->GetParent (
-        __uuidof (IDXGIAdapter),
-        reinterpret_cast<void**>(&dxgiAdapter));
+    hr = dxgiDevice->GetParent (__uuidof(IDXGIAdapter), reinterpret_cast<void **> (&dxgiAdapter));
     dxgiDevice->Release ();
     if (FAILED (hr))
     {
@@ -526,6 +527,11 @@ int RecorderDDA::PrepareSession ()
     else
     {
         Recorder::recordLogger->info ("found {} displays", totalDisplays);
+    }
+    if (totalDisplays <= params.desktopNum)
+    {
+        Recorder::recordLogger->error ("invalid desktop num provided via RecorderParams");
+        return PREPARE_DESK_DUPL_ERROR;
     }
 
     // get output descriptions for all outputs
@@ -582,22 +588,24 @@ int RecorderDDA::PrepareSession ()
     {
         switch (hr)
         {
-            case E_INVALIDARG :
+            case E_INVALIDARG:
                 Recorder::recordLogger->error ("invalid arg to create desktopdiplication");
                 return PREPARE_DESK_DUPL_ERROR;
-            case E_ACCESSDENIED :
+            case E_ACCESSDENIED:
                 Recorder::recordLogger->error ("no priviligies to create desktopdiplication");
                 return PREPARE_DESK_DUPL_ERROR;
-            case DXGI_ERROR_UNSUPPORTED :
-                Recorder::recordLogger->error ("desktopdiplication is unsupported on current desktop mode");
+            case DXGI_ERROR_UNSUPPORTED:
+                Recorder::recordLogger->error (
+                    "desktopdiplication is unsupported on current desktop mode");
                 return PREPARE_DESK_DUPL_ERROR;
-            case DXGI_ERROR_NOT_CURRENTLY_AVAILABLE :
+            case DXGI_ERROR_NOT_CURRENTLY_AVAILABLE:
                 Recorder::recordLogger->error ("desktopdiplication is not available");
                 return PREPARE_DESK_DUPL_ERROR;
-            case DXGI_ERROR_SESSION_DISCONNECTED :
-                Recorder::recordLogger->error ("desktopdiplication session is currently disconnected");
+            case DXGI_ERROR_SESSION_DISCONNECTED:
+                Recorder::recordLogger->error (
+                    "desktopdiplication session is currently disconnected");
                 return PREPARE_DESK_DUPL_ERROR;
-            default :
+            default:
                 Recorder::recordLogger->error ("unable to create desktopduplication");
                 return PREPARE_DESK_DUPL_ERROR;
         }
@@ -632,7 +640,8 @@ int RecorderDDA::PrepareSession ()
     return STATUS_OK;
 }
 
-int RecorderDDA::GetScreenShotOfDisplay (unsigned int maxAttempts, ID3D11Texture2D **desktopTexture, unsigned int displayNum)
+int RecorderDDA::GetScreenShotOfDisplay (
+    unsigned int maxAttempts, ID3D11Texture2D **desktopTexture, unsigned int displayNum)
 {
     HRESULT hr (E_FAIL);
     ID3D11Texture2D *acquiredImage = NULL;
@@ -643,7 +652,8 @@ int RecorderDDA::GetScreenShotOfDisplay (unsigned int maxAttempts, ID3D11Texture
     hr = device->CreateTexture2D (&desc, NULL, &destImage);
     if ((FAILED (hr)) || (destImage == NULL))
     {
-        Recorder::recordLogger->error ("unable to create texture with size {}x{} hr is {}", desc.Width, desc.Height, hr);
+        Recorder::recordLogger->error (
+            "unable to create texture with size {}x{} hr is {}", desc.Width, desc.Height, hr);
         return CREATE_TEXTURE_ERROR;
     }
 
@@ -653,11 +663,8 @@ int RecorderDDA::GetScreenShotOfDisplay (unsigned int maxAttempts, ID3D11Texture
 
     for (int i = 0; i < maxAttempts; i++)
     {
-        hr = deskDupls[displayNum]->AcquireNextFrame (
-            1000, // timeout
-            &frameInfo,
-            &desktopResource
-        );
+        hr = deskDupls[displayNum]->AcquireNextFrame (1000, // timeout
+            &frameInfo, &desktopResource);
 
         if (SUCCEEDED (hr))
             break;
@@ -671,7 +678,8 @@ int RecorderDDA::GetScreenShotOfDisplay (unsigned int maxAttempts, ID3D11Texture
         {
             if (hr == DXGI_ERROR_INVALID_CALL)
             {
-                Recorder::recordLogger->error ("DXGI_ERROR_INVALID_CALL previous frame is not released?");
+                Recorder::recordLogger->error (
+                    "DXGI_ERROR_INVALID_CALL previous frame is not released?");
                 res = DDA_CAPTURE_ERROR;
                 break;
             }
@@ -741,16 +749,17 @@ int RecorderDDA::GetScreenShotOfDisplay (unsigned int maxAttempts, ID3D11Texture
     return res;
 }
 
-bool RecorderDDA::CheckWindowOnDisplay (const RECT& display, const RECT& processRect)
+bool RecorderDDA::CheckWindowOnDisplay (const RECT &display, const RECT &processRect)
 {
     int yCenter = processRect.top + (processRect.bottom - processRect.top) / 2;
     int xCenter = processRect.left + (processRect.right - processRect.left) / 2;
 
-    Recorder::recordLogger->trace ("CheckWindowOnDisplay, window center is {}x{}, display coordinates are ({},{}), ({},{})",
-                                    xCenter, yCenter, display.left, display.top, display.right, display.bottom);
+    Recorder::recordLogger->trace (
+        "CheckWindowOnDisplay, window center is {}x{}, display coordinates are ({},{}), ({},{})",
+        xCenter, yCenter, display.left, display.top, display.right, display.bottom);
 
-    if ((yCenter < display.bottom) && (yCenter > display.top)
-        && (xCenter > display.left) && (xCenter < display.right))
+    if ((yCenter < display.bottom) && (yCenter > display.top) && (xCenter > display.left) &&
+        (xCenter < display.right))
         return TRUE;
     else
         return FALSE;
@@ -758,7 +767,7 @@ bool RecorderDDA::CheckWindowOnDisplay (const RECT& display, const RECT& process
 
 int RecorderDDA::GetProcessWindow (RECT *rc, int *processDisplay)
 {
-    if (!pid)
+    if (!params.pid)
     {
         Recorder::recordLogger->error ("PID is not set");
         return INVALID_ARGUMENTS_ERROR;
@@ -766,34 +775,36 @@ int RecorderDDA::GetProcessWindow (RECT *rc, int *processDisplay)
     RECT rcWind;
     HWND hwndWind;
     int processDisplayNum = -1;
-    hwndWind = GetMainWindow (pid);
+    hwndWind = GetMainWindow (params.pid);
     if (!hwndWind)
     {
-        Recorder::recordLogger->error ("Unable to find window for pid {}", pid);
+        Recorder::recordLogger->error ("Unable to find window for pid {}", params.pid);
         return FIND_WINDOW_ERROR;
     }
     // IsWindowVisible return true even if window is hidden nevertheless keep this check
     if (!IsWindowVisible (hwndWind))
     {
-        Recorder::recordLogger->error ("WindoW for pid {} is invisible", pid);
+        Recorder::recordLogger->error ("WindoW for pid {} is invisible", params.pid);
         return FIND_WINDOW_ERROR;
     }
     // check that window was minimized
     if (GetWindowLongA (hwndWind, GWL_STYLE) & WS_MINIMIZE)
     {
-        Recorder::recordLogger->error ("WindoW for pid {} is minimized", pid);
+        Recorder::recordLogger->error ("WindoW for pid {} is minimized", params.pid);
         return FIND_WINDOW_ERROR;
     }
 
-    if (DwmGetWindowAttribute (hwndWind, DWMWA_EXTENDED_FRAME_BOUNDS, (PVOID) &rcWind, sizeof (RECT)))
+    if (DwmGetWindowAttribute (
+            hwndWind, DWMWA_EXTENDED_FRAME_BOUNDS, (PVOID)&rcWind, sizeof (RECT)))
     {
         if (!GetWindowRect (hwndWind, &rcWind))
         {
-            Recorder::recordLogger->error ("Unable to find rect for hwnd, pid {}", pid);
+            Recorder::recordLogger->error ("Unable to find rect for hwnd, pid {}", params.pid);
             return FIND_WINDOW_ERROR;
         }
     }
-    Recorder::recordLogger->trace ("Window position from {},{} to {},{}", rcWind.left, rcWind.top, rcWind.right, rcWind.bottom);
+    Recorder::recordLogger->trace ("Window position from {},{} to {},{}", rcWind.left, rcWind.top,
+        rcWind.right, rcWind.bottom);
 
     for (int i = 0; i < totalDisplays; i++)
     {
@@ -805,7 +816,7 @@ int RecorderDDA::GetProcessWindow (RECT *rc, int *processDisplay)
     }
     if (processDisplayNum == -1)
     {
-        Recorder::recordLogger->error ("Unable to find display for process {}", pid);
+        Recorder::recordLogger->error ("Unable to find display for process {}", params.pid);
         return FIND_WINDOW_ERROR;
     }
     Recorder::recordLogger->trace ("Process display is {}", processDisplayNum);
@@ -815,7 +826,8 @@ int RecorderDDA::GetProcessWindow (RECT *rc, int *processDisplay)
     return STATUS_OK;
 }
 
-int RecorderDDA::GetImageFromTexture (ID3D11Texture2D *destImage, int displayNum, RECT rcWind, volatile unsigned char *frameBuffer, volatile int *width, volatile int *height)
+int RecorderDDA::GetImageFromTexture (ID3D11Texture2D *destImage, int displayNum, RECT rcWind,
+    volatile unsigned char *frameBuffer, volatile int *width, volatile int *height)
 {
     D3D11_MAPPED_SUBRESOURCE resource;
     UINT subresource = D3D11CalcSubresource (0, 0, 0);
@@ -826,8 +838,8 @@ int RecorderDDA::GetImageFromTexture (ID3D11Texture2D *destImage, int displayNum
         return DDA_CAPTURE_ERROR;
     }
 
-    unsigned char* sptr = reinterpret_cast<unsigned char*>(resource.pData);
-    UINT rowPitch = std::min<UINT>(descs[displayNum].Width * 4, resource.RowPitch);
+    unsigned char *sptr = reinterpret_cast<unsigned char *> (resource.pData);
+    UINT rowPitch = std::min<UINT> (descs[displayNum].Width * 4, resource.RowPitch);
     volatile unsigned char *dptr = frameBuffer;
 
     for (size_t h = 0; h < descs[displayNum].Height; h++)
@@ -841,29 +853,36 @@ int RecorderDDA::GetImageFromTexture (ID3D11Texture2D *destImage, int displayNum
 
     int shiftLeft = std::min<int> (0, outputDescs[displayNum].DesktopCoordinates.left);
     int shiftTop = std::min<int> (0, outputDescs[displayNum].DesktopCoordinates.top);
-    int displayWidth = outputDescs[displayNum].DesktopCoordinates.right - outputDescs[displayNum].DesktopCoordinates.left;
-    int displayHeight = outputDescs[displayNum].DesktopCoordinates.bottom - outputDescs[displayNum].DesktopCoordinates.top;
+    int displayWidth = outputDescs[displayNum].DesktopCoordinates.right -
+        outputDescs[displayNum].DesktopCoordinates.left;
+    int displayHeight = outputDescs[displayNum].DesktopCoordinates.bottom -
+        outputDescs[displayNum].DesktopCoordinates.top;
 
-    if (pid)
+    if (params.pid)
     {
         // window coordinates may be outside virtual desktop
-        int newWindTop = std::max<int>(rcWind.top, outputDescs[displayNum].DesktopCoordinates.top);
-        int newWindBottom = std::min<int>(rcWind.bottom, outputDescs[displayNum].DesktopCoordinates.bottom);
-        int newWindLeft = std::max<int>(rcWind.left, outputDescs[displayNum].DesktopCoordinates.left);
-        int newWindRight = std::min<int>(rcWind.right, outputDescs[displayNum].DesktopCoordinates.right);
+        int newWindTop = std::max<int> (rcWind.top, outputDescs[displayNum].DesktopCoordinates.top);
+        int newWindBottom =
+            std::min<int> (rcWind.bottom, outputDescs[displayNum].DesktopCoordinates.bottom);
+        int newWindLeft =
+            std::max<int> (rcWind.left, outputDescs[displayNum].DesktopCoordinates.left);
+        int newWindRight =
+            std::min<int> (rcWind.right, outputDescs[displayNum].DesktopCoordinates.right);
         // move process window to framebuffer.begin
         int startPos = ((newWindTop - shiftTop) * displayWidth + newWindLeft - shiftLeft) * 4;
         volatile unsigned char *dptr = frameBuffer + startPos;
         int widthWin = newWindRight - newWindLeft;
 
-        Recorder::recordLogger->trace ("startpose for copying is {} widthWin is {}", startPos, widthWin);
-        for (int curH = newWindTop; curH < newWindBottom ; curH++)
+        Recorder::recordLogger->trace (
+            "startpose for copying is {} widthWin is {}", startPos, widthWin);
+        for (int curH = newWindTop; curH < newWindBottom; curH++)
         {
             int sourcePos = ((curH - shiftTop) * displayWidth + newWindLeft - shiftLeft) * 4;
             memmove ((void *)dptr, (void *)(frameBuffer + sourcePos), widthWin * 4);
             dptr += widthWin * 4;
         }
-        memmove ((void *)frameBuffer, (void *)(frameBuffer + startPos), (newWindBottom - newWindTop) * widthWin * 4);
+        memmove ((void *)frameBuffer, (void *)(frameBuffer + startPos),
+            (newWindBottom - newWindTop) * widthWin * 4);
 
         *height = newWindBottom - newWindTop;
         *width = widthWin;

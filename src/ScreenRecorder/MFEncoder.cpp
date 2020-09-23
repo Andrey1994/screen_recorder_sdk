@@ -2,13 +2,14 @@
 
 #include "MFEncoder.h"
 
-#pragma comment (lib, "mfreadwrite")
-#pragma comment (lib, "mfplat")
-#pragma comment (lib, "mfuuid")
-#pragma comment (lib, "dxguid.lib")
+#pragma comment(lib, "mfreadwrite")
+#pragma comment(lib, "mfplat")
+#pragma comment(lib, "mfuuid")
+#pragma comment(lib, "dxguid.lib")
 
 
-MFEncoder::MFEncoder (int bitRate, int fps, const char *fileName, GUID videoInputFormat, int videoWidth, int videoHeight)
+MFEncoder::MFEncoder (int bitRate, int fps, const char *fileName, GUID videoInputFormat,
+    int videoWidth, int videoHeight)
 {
     this->pWriter = NULL;
     this->firstTime = 0;
@@ -33,7 +34,8 @@ MFEncoder::~MFEncoder ()
     MFShutdown ();
 }
 
-HRESULT MFEncoder::InitializeSinkWriter (IMFDXGIDeviceManager *deviceManager, bool useHardwareTransform)
+HRESULT MFEncoder::InitializeSinkWriter (
+    IMFDXGIDeviceManager *deviceManager, bool useHardwareTransform)
 {
     IMFMediaType *pMediaTypeOut = NULL;
     IMFMediaType *pMediaTypeIn = NULL;
@@ -46,9 +48,9 @@ HRESULT MFEncoder::InitializeSinkWriter (IMFDXGIDeviceManager *deviceManager, bo
         const UINT32 cElements = 2;
         if (SUCCEEDED (hr))
             hr = MFCreateAttributes (&pAttributes, cElements);
-        if (SUCCEEDED(hr))
+        if (SUCCEEDED (hr))
             hr = pAttributes->SetUnknown (MF_SINK_WRITER_D3D_MANAGER, deviceManager);
-        if (SUCCEEDED(hr))
+        if (SUCCEEDED (hr))
             hr = pAttributes->SetUINT32 (MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, 1);
     }
     else
@@ -56,7 +58,7 @@ HRESULT MFEncoder::InitializeSinkWriter (IMFDXGIDeviceManager *deviceManager, bo
         const UINT32 cElements = 1;
         if (SUCCEEDED (hr))
             hr = MFCreateAttributes (&pAttributes, cElements);
-        if (SUCCEEDED(hr))
+        if (SUCCEEDED (hr))
             hr = pAttributes->SetUnknown (MF_SINK_WRITER_D3D_MANAGER, deviceManager);
     }
 
@@ -85,8 +87,8 @@ HRESULT MFEncoder::InitializeSinkWriter (IMFDXGIDeviceManager *deviceManager, bo
         hr = MFSetAttributeRatio (pMediaTypeOut, MF_MT_FRAME_RATE_RANGE_MAX, 200, 1);
     if (SUCCEEDED (hr))
         hr = MFSetAttributeRatio (pMediaTypeOut, MF_MT_FRAME_RATE_RANGE_MIN, 1, 1);
-    if (SUCCEEDED(hr))
-        hr = MFSetAttributeRatio(pMediaTypeOut, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
+    if (SUCCEEDED (hr))
+        hr = MFSetAttributeRatio (pMediaTypeOut, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
     if (SUCCEEDED (hr))
         hr = pWriter->AddStream (pMediaTypeOut, &streamIndex);
 
@@ -130,7 +132,7 @@ HRESULT MFEncoder::WriteFrame (IUnknown *texture)
 {
     FILETIME ft;
     GetSystemTimePreciseAsFileTime (&ft);
-    LONGLONG currTime = ((int64_t) ft.dwHighDateTime << 32L) | (int64_t) ft.dwLowDateTime;
+    LONGLONG currTime = ((int64_t)ft.dwHighDateTime << 32L) | (int64_t)ft.dwLowDateTime;
     // skip first frame to measure frameduration properly
     if ((!firstTime) && (!prevTime))
     {
@@ -143,7 +145,7 @@ HRESULT MFEncoder::WriteFrame (IUnknown *texture)
     IMFMediaBuffer *pBuffer = NULL;
 
     HRESULT hr = MFCreateDXGISurfaceBuffer (IID_ID3D11Texture2D, texture, 0, FALSE, &pBuffer);
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED (hr))
         hr = pBuffer->SetCurrentLength (4 * videoWidth * videoHeight);
     // Create a media sample and add the buffer to the sample.
     if (SUCCEEDED (hr))

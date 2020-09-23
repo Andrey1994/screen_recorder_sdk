@@ -1,4 +1,5 @@
 import os
+import json
 import ctypes
 import numpy
 import enum
@@ -10,7 +11,31 @@ from PIL import Image
 from screen_recorder_sdk.exit_codes import RecorderExitCodes
 
 
+class RecorderParams (object):
+    """ inputs parameters for init_resources method
+
+    :param desktop_num: desktop num, counting from 0
+    :type desktop_num: int
+    :param pid: pid of process to capture
+    :type pid: int
+    """
+    def __init__ (self, desktop_num = 0, pid = 0) -> None:
+        self.pid = pid
+        self.desktop_num = desktop_num
+
+    def to_json (self) -> None :
+        return json.dumps (self, default = lambda o: o.__dict__,
+            sort_keys = True, indent = 4)
+
+
 class RecorderError (Exception):
+    """This exception is raised if non-zero exit code is returned from C code
+
+    :param message: exception message
+    :type message: str
+    :param exit_code: exit code from low level API
+    :type exit_code: int
+    """
     def __init__ (self, message, exit_code):
         detailed_message = '%s:%d %s' % (RecorderExitCodes (exit_code).name, exit_code, message)
         super (RecorderError, self).__init__ (detailed_message)
@@ -38,7 +63,7 @@ class ScreenRecorderDLL (object):
         self.InitResources = self.lib.InitResources
         self.InitResources.restype = ctypes.c_int
         self.InitResources.argtypes = [
-            ctypes.c_int
+            ctypes.c_char_p
         ]
 
         self.GetScreenShot = self.lib.GetScreenShot
@@ -80,12 +105,31 @@ class ScreenRecorderDLL (object):
         ]
 
 
-def init_resources (pid = 0):
-    res = ScreenRecorderDLL.get_instance ().InitResources (pid)
+def init_resources (params):
+    """ Init resources for recording
+
+    :param params: params for recording
+    :type params: RecorderParams
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
+    try:
+        input_json = params.to_json ().encode ()
+    except:
+        input_json = params.to_json ()
+
+    res = ScreenRecorderDLL.get_instance ().InitResources (input_json)
     if res != RecorderExitCodes.STATUS_OK.value:
-        raise RecorderError ('unable to connect to PID', res)
+        raise RecorderError ('unable to init resources', res)
 
 def get_screenshot (max_attempts = 1):
+    """ Get Screenshot
+
+    :param max_attempts: max attempts to capture frame buffer
+    :type max_attempts: int
+    :return: Pillow Image
+    :rtype: Pillow Image
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
     max_width = 4096
     max_height = 4096
     max_pixels = max_width * max_height
@@ -100,6 +144,12 @@ def get_screenshot (max_attempts = 1):
     return ScreenShotConvertor (frame_buffer, width, height).get_image ()
 
 def get_pid ():
+    """ Get PID
+
+    :rtype: int
+    :return: PID
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
     pid = numpy.zeros (1).astype (numpy.int64)
     res = ScreenRecorderDLL.get_instance ().GetPID (pid)
     if res != RecorderExitCodes.STATUS_OK.value:
@@ -107,31 +157,64 @@ def get_pid ():
     return pid[0]
 
 def free_resources ():
+    """ Free Resources
+
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
     res = ScreenRecorderDLL.get_instance ().FreeResources ()
     if res != RecorderExitCodes.STATUS_OK.value:
         raise RecorderError ('unable to free capture resources', res)
 
 def enable_log ():
+    """ Enable Logger
+
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
     res = ScreenRecorderDLL.get_instance ().SetLogLevel (1)
     if res != RecorderExitCodes.STATUS_OK.value:
         raise RecorderError ('unable to enable capture log', res)
 
 def enable_dev_log ():
+    """ Enable Dev Logger
+
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
     res = ScreenRecorderDLL.get_instance ().SetLogLevel (0)
     if res != RecorderExitCodes.STATUS_OK.value:
         raise RecorderError ('unable to enable capture log', res)
 
 def disable_log ():
+    """ Disable Logger
+
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
     res = ScreenRecorderDLL.get_instance ().SetLogLevel (6)
     if res != RecorderExitCodes.STATUS_OK.value:
         raise RecorderError ('unable to disable capture log', res)
 
 def start_video_recording (filename, frame_rate = 30, bit_rate = 8000000, use_hw_transfowrms = True):
+    """ Start Video Recording
+
+    :param filename: filename to store video
+    :type filename: str
+    :param frame_rate: FPS
+    :type frame_rate: int
+    :param bit_rate: bit rate, set higher values for better quality
+    :type bit_rate: int
+    :param use_hw_transforms: if you have good GPU set this flag to True for better perf, if you see errors try to set it to false
+    :type use_hw_transfowrms: bool
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
+
     res = ScreenRecorderDLL.get_instance ().StartVideoRecording (filename.encode ('utf-8'), frame_rate, bit_rate, use_hw_transfowrms)
     if res != RecorderExitCodes.STATUS_OK.value:
         raise RecorderError ('unable to start recording video', res)
 
 def stop_video_recording ():
+    """ Stop video recording
+
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
     res = ScreenRecorderDLL.get_instance ().StopVideoRecording ()
     if res != RecorderExitCodes.STATUS_OK.value:
         raise RecorderError ('unable to stop recording video', res)
