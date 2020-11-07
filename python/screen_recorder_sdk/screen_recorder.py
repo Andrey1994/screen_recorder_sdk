@@ -85,13 +85,19 @@ class ScreenRecorderDLL (object):
             ctypes.c_int64
         ]
 
+        self.SetLogFile = self.lib.SetLogFile
+        self.SetLogFile.restype = ctypes.c_int
+        self.SetLogFile.argtypes = [
+            ctypes.c_char_p
+        ]
+
         self.StartVideoRecording = self.lib.StartVideoRecording
         self.StartVideoRecording.restype = ctypes.c_int
         self.StartVideoRecording.argtypes = [
             ctypes.c_char_p,
             ctypes.c_int,
             ctypes.c_int,
-            ctypes.c_bool
+            ctypes.c_int
         ]
 
         self.StopVideoRecording = self.lib.StopVideoRecording
@@ -206,7 +212,8 @@ def start_video_recording (filename, frame_rate = 30, bit_rate = 8000000, use_hw
     :raises RecorderError: if non zero exit code returned from low level API
     """
 
-    res = ScreenRecorderDLL.get_instance ().StartVideoRecording (filename.encode ('utf-8'), frame_rate, bit_rate, use_hw_transfowrms)
+    res = ScreenRecorderDLL.get_instance ().StartVideoRecording (filename.encode ('utf-8'),
+        frame_rate, bit_rate, int (use_hw_transfowrms == True))
     if res != RecorderExitCodes.STATUS_OK.value:
         raise RecorderError ('unable to start recording video', res)
 
@@ -218,6 +225,20 @@ def stop_video_recording ():
     res = ScreenRecorderDLL.get_instance ().StopVideoRecording ()
     if res != RecorderExitCodes.STATUS_OK.value:
         raise RecorderError ('unable to stop recording video', res)
+
+def set_log_file (log_file):
+    """redirect logger from stderr to file, can be called any time
+    :param log_file: log file name
+    :type log_file: str
+    :raises RecorderError: if non zero exit code returned from low level API
+    """
+    try:
+        file = log_file.encode ()
+    except:
+        file = log_file
+    res = ScreenRecorderDLL.get_instance ().SetLogFile (file)
+    if res != RecorderExitCodes.STATUS_OK.value:
+        raise RecorderError ('unable to redirect logs to a file', res)
 
 
 class ScreenShotConvertor (object):

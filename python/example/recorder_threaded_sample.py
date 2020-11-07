@@ -21,6 +21,7 @@ class ScreenShoter (threading.Thread):
 
 def main ():
     screen_recorder.enable_dev_log ()
+    screen_recorder.set_log_file ('recorder.log')
 
     params = screen_recorder.RecorderParams ()
     # params.pid = 0 # use it to set process Id to capture

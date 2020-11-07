@@ -23,16 +23,17 @@ typedef enum
 
 extern "C"
 {
-    __declspec(dllexport) int InitResources (char *paramsString);
-    __declspec(dllexport) int GetScreenShot (
+    __declspec(dllexport) int __cdecl InitResources (char *paramsString);
+    __declspec(dllexport) int __cdecl GetScreenShot (
         unsigned int maxAttempts, unsigned char *frameBuffer, int *width, int *height);
-    __declspec(dllexport) int FreeResources ();
-    __declspec(dllexport) int SetLogLevel (int level);
-    __declspec(dllexport) int GetPID (int *pid);
+    __declspec(dllexport) int __cdecl FreeResources ();
+    __declspec(dllexport) int __cdecl SetLogLevel (int level);
+    __declspec(dllexport) int __cdecl SetLogFile (char *logFile);
+    __declspec(dllexport) int __cdecl GetPID (int *pid);
 
-    __declspec(dllexport) int StartVideoRecording (
-        const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform);
-    __declspec(dllexport) int StopVideoRecording ();
+    __declspec(dllexport) int __cdecl StartVideoRecording (
+        const char *outputFileName, int frameRate, int bitRate, int useHardwareTransform);
+    __declspec(dllexport) int __cdecl StopVideoRecording ();
 }
 
 #endif

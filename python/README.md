@@ -5,7 +5,12 @@ I use [Desktop Duplication API](https://docs.microsoft.com/en-us/windows/desktop
 
 For screenshots it cuts process window from desktop while for videos it captures full display without cutting for better performance
 
-*DDA works stable only for Windows >= 10 also you need 64bit Python*
+## System Requirements
+
+* Windows >= 10, it may work on Windows 8.1 and Windows Server 2012, but we don't ensure it
+* DirectX, you can install it from [Microsoft Website](https://www.microsoft.com/en-us/download/details.aspx?id=17431)
+* Media Feature Pack, download it [here](https://www.microsoft.com/en-us/software-download/mediafeaturepack)
+* 64 bits Java or Python, we don't provide x86 libs
 
 ## Installation
 

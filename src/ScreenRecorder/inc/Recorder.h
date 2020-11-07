@@ -3,13 +3,14 @@
 
 #include "RecorderParams.h"
 
-#include <logger\spdlog.h>
+#include "logger\spdlog.h"
 
 class Recorder
 {
 public:
     static std::shared_ptr<spdlog::logger> recordLogger;
     static int SetLogLevel (int level);
+    static int SetLogFile (char *logFile);
 
     Recorder (struct RecorderParams recorderParams);
     virtual ~Recorder ()

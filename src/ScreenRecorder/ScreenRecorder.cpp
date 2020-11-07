@@ -95,15 +95,20 @@ int SetLogLevel (int level)
     return Recorder::SetLogLevel (level);
 }
 
+int SetLogFile (char *logFile)
+{
+    return Recorder::SetLogFile (logFile);
+}
+
 int StartVideoRecording (
-    const char *outputFileName, int frameRate, int bitRate, bool useHardwareTransform)
+    const char *outputFileName, int frameRate, int bitRate, int useHardwareTransform)
 {
     if (!recorder)
         return SESSION_NOT_CREATED_ERROR;
 
     WaitForSingleObject (mutex, INFINITE);
-    int res =
-        recorder->StartVideoRecording (outputFileName, frameRate, bitRate, useHardwareTransform);
+    bool useTransforms = (useHardwareTransform != 0);
+    int res = recorder->StartVideoRecording (outputFileName, frameRate, bitRate, useTransforms);
     ReleaseMutex (mutex);
     return res;
 }

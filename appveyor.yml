@@ -40,7 +40,6 @@ artifacts:
 deploy_script:
   - twine upload --skip-existing dist/*.whl --user Andrey1994 --password %PYPI_PASSWORD%
 
-
 notifications:
   - provider: Email
     to:

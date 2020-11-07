@@ -48,8 +48,8 @@ include_directories (
     src/ScreenRecorder/inc
 )
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/python/screen_recorder_sdk/lib)
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/python/screen_recorder_sdk/lib)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/compiled)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/compiled)
 
 add_library (
     ScreenRecorder SHARED

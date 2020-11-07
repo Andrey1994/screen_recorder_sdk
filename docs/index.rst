@@ -4,10 +4,10 @@
    contain the root `toctree` directive.
 
 Welcome to Screen Recorder SDK documentation!
-=======================================
-
+==============================================
 
 .. toctree::
+    Requirements
     UserAPI
     Examples
     License
