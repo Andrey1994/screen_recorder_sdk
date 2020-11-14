@@ -45,10 +45,11 @@ deploy_script:
       If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_BRANCH -eq "master") {
           (gc .\pom.xml).replace('0.0.1-SNAPSHOT',$env:APPVEYOR_REPO_TAG_NAME) | Out-File -encoding ASCII pom.xml
       }
+      cd $env:APPVEYOR_BUILD_FOLDER\java\screen_recorder
       (gc .\settings.xml).replace('USER','Andrey1994') | Out-File -encoding ASCII settings.xml
       (gc .\settings.xml).replace('TOKEN',$env:GITHUB_TOKEN) | Out-File -encoding ASCII settings.xml
       mvn -s $env:APPVEYOR_BUILD_FOLDER\java-package\brainflow\settings.xml deploy -Dregistry=https://maven.pkg.github.com/brainflow-dev -Dtoken=$env:GITHUB_TOKEN
-  - twine upload --skip-existing dist/*.whl --user Andrey1994 --password %PYPI_PASSWORD%
+  - cd $env:APPVEYOR_BUILD_FOLDER\java && twine upload --skip-existing dist/*.whl --user Andrey1994 --password %PYPI_PASSWORD%
 
 notifications:
   - provider: Email
