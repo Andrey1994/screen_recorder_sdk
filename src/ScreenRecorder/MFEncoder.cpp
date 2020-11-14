@@ -1,6 +1,7 @@
 #include <d3d11.h>
 
 #include "MFEncoder.h"
+#include "Recorder.h"
 
 #pragma comment(lib, "mfreadwrite")
 #pragma comment(lib, "mfplat")
@@ -41,78 +42,156 @@ HRESULT MFEncoder::InitializeSinkWriter (
     IMFMediaType *pMediaTypeIn = NULL;
     IMFAttributes *pAttributes = NULL;
 
-
     HRESULT hr = MFStartup (MF_VERSION);
     if (useHardwareTransform)
     {
         const UINT32 cElements = 2;
         if (SUCCEEDED (hr))
+        {
+            Recorder::recordLogger->trace ("Before MFCreateAttributes");
             hr = MFCreateAttributes (&pAttributes, cElements);
+        }
         if (SUCCEEDED (hr))
+        {
+            Recorder::recordLogger->trace ("Before set d3d manager");
             hr = pAttributes->SetUnknown (MF_SINK_WRITER_D3D_MANAGER, deviceManager);
+        }
         if (SUCCEEDED (hr))
+        {
+            Recorder::recordLogger->trace ("Before enable hw transforms");
             hr = pAttributes->SetUINT32 (MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, 1);
+        }
     }
     else
     {
         const UINT32 cElements = 1;
         if (SUCCEEDED (hr))
+        {
+            Recorder::recordLogger->trace ("Before MFCreateAttributes");
             hr = MFCreateAttributes (&pAttributes, cElements);
+        }
         if (SUCCEEDED (hr))
+        {
+            Recorder::recordLogger->trace ("Before set d3d manager");
             hr = pAttributes->SetUnknown (MF_SINK_WRITER_D3D_MANAGER, deviceManager);
+        }
     }
 
     if (SUCCEEDED (hr))
     {
+        Recorder::recordLogger->trace ("Before MFCreateSinkWriterFromURL");
         std::wstring stemp = std::wstring (fileName.begin (), fileName.end ());
         LPCWSTR sw = stemp.c_str ();
         hr = MFCreateSinkWriterFromURL (sw, NULL, pAttributes, &pWriter);
     }
     // Set the output media type.
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFCreateMediaType");
         hr = MFCreateMediaType (&pMediaTypeOut);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before SetGUID MF_MT_MAJOR_TYPE");
         hr = pMediaTypeOut->SetGUID (MF_MT_MAJOR_TYPE, MFMediaType_Video);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before SetGUID MF_MT_SUBTYPE");
         hr = pMediaTypeOut->SetGUID (MF_MT_SUBTYPE, videoEncodingFormat);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before SetUINT32 MF_MT_AVG_BITRATE");
         hr = pMediaTypeOut->SetUINT32 (MF_MT_AVG_BITRATE, bitRate);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before SetUINT32 MF_MT_INTERLACE_MODE");
         hr = pMediaTypeOut->SetUINT32 (MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFSetAttributeSize MF_MT_FRAME_SIZE");
         hr = MFSetAttributeSize (pMediaTypeOut, MF_MT_FRAME_SIZE, videoWidth, videoHeight);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFSetAttributeRatio MF_MT_FRAME_RATE");
         hr = MFSetAttributeRatio (pMediaTypeOut, MF_MT_FRAME_RATE, fps, 1);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFSetAttributeRatio MF_MT_FRAME_RATE_RANGE_MAX");
         hr = MFSetAttributeRatio (pMediaTypeOut, MF_MT_FRAME_RATE_RANGE_MAX, 200, 1);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFSetAttributeRatio MF_MT_FRAME_RATE_RANGE_MIN");
         hr = MFSetAttributeRatio (pMediaTypeOut, MF_MT_FRAME_RATE_RANGE_MIN, 1, 1);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFSetAttributeRatio MF_MT_PIXEL_ASPECT_RATIO");
         hr = MFSetAttributeRatio (pMediaTypeOut, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before AddStream");
         hr = pWriter->AddStream (pMediaTypeOut, &streamIndex);
+    }
 
     // Set the input media type.
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFCreateMediaType");
         hr = MFCreateMediaType (&pMediaTypeIn);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before SetGUID MF_MT_MAJOR_TYPE");
         hr = pMediaTypeIn->SetGUID (MF_MT_MAJOR_TYPE, MFMediaType_Video);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before SetGUID MF_MT_SUBTYPE");
         hr = pMediaTypeIn->SetGUID (MF_MT_SUBTYPE, videoInputFormat);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before SetUINT32 MF_MT_INTERLACE_MODE");
         hr = pMediaTypeIn->SetUINT32 (MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before SetUINT32 MF_SA_D3D11_AWARE");
         hr = pMediaTypeIn->SetUINT32 (MF_SA_D3D11_AWARE, 1);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFSetAttributeSize MF_MT_FRAME_SIZE");
         hr = MFSetAttributeSize (pMediaTypeIn, MF_MT_FRAME_SIZE, videoWidth, videoHeight);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFSetAttributeRatio MF_MT_FRAME_RATE");
         hr = MFSetAttributeRatio (pMediaTypeIn, MF_MT_FRAME_RATE, fps, 1);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before MFSetAttributeRatio MF_MT_PIXEL_ASPECT_RATIO");
         hr = MFSetAttributeRatio (pMediaTypeIn, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before SetInputMediaType streamIndex");
         hr = pWriter->SetInputMediaType (streamIndex, pMediaTypeIn, NULL);
+    }
     if (SUCCEEDED (hr))
+    {
+        Recorder::recordLogger->trace ("Before BeginWriting");
         hr = pWriter->BeginWriting ();
+    }
 
     if (pMediaTypeOut)
     {

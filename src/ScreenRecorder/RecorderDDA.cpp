@@ -345,7 +345,6 @@ void RecorderDDA::WorkerThread ()
             // start recording video
             if (!isRecording)
             {
-                WakeConditionVariable (&condVar);
                 Recorder::recordLogger->trace ("starting video recording");
                 if (mfenc != NULL)
                 {
@@ -356,7 +355,6 @@ void RecorderDDA::WorkerThread ()
                 EnterCriticalSection (&critSect);
                 mfenc = new MFEncoder (this->bitRate, this->frameRate, (char *)this->videoFileName,
                     MFVideoFormat_ARGB32, width, height);
-                isRecording = TRUE;
                 HRESULT hr =
                     mfenc->InitializeSinkWriter (deviceManager, this->useHardwareTransform);
                 if (FAILED (hr))
@@ -368,8 +366,10 @@ void RecorderDDA::WorkerThread ()
                 {
                     Recorder::recordLogger->info (
                         "Start recording video to {}", (char *)this->videoFileName);
+                    isRecording = TRUE;
                 }
                 LeaveCriticalSection (&critSect);
+                WakeConditionVariable (&condVar);
             }
             // add frame
             else
@@ -393,11 +393,11 @@ void RecorderDDA::WorkerThread ()
             // stop recording video
             if (isRecording)
             {
-                WakeConditionVariable (&condVar);
                 Recorder::recordLogger->info ("Stop recording video");
                 delete mfenc;
                 mfenc = NULL;
                 isRecording = FALSE;
+                WakeConditionVariable (&condVar);
             }
         }
     }
