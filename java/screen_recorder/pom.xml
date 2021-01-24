@@ -15,6 +15,14 @@
     </license>
   </licenses>
 
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Andrey1994 Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/Andrey1994/screen_recorder_sdk</url>
+    </repository>
+  </distributionManagement>
+
   <build>
     <finalName>screen_recorder</finalName>
 
