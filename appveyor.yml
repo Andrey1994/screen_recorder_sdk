@@ -45,7 +45,7 @@ deploy_script:
   - ps: >-
       If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_BRANCH -eq "master") {
         cd $env:APPVEYOR_BUILD_FOLDER\python
-        twine upload --skip-existing dist/*.whl --user Andrey1994 --password %PYPI_PASSWORD%
+        twine upload --skip-existing dist/*.whl --user Andrey1994 --password $env:PYPI_PASSWORD
         cd $env:APPVEYOR_BUILD_FOLDER\java\screen_recorder
         (gc .\pom.xml).replace('0.0.1-SNAPSHOT',$env:APPVEYOR_REPO_TAG_NAME) | Out-File -encoding ASCII pom.xml
         (gc .\settings.xml).replace('USER','Andrey1994') | Out-File -encoding ASCII settings.xml
