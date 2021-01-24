@@ -20,7 +20,7 @@ setup (
         'Topic :: Utilities'
     ],
     install_requires = [
-        'numpy', 'Pillow'
+        'numpy==1.18.1', 'Pillow'
     ],
     package_data = {
         'screen_recorder_sdk': [os.path.join ('lib', 'ScreenRecorder.dll')]
