@@ -8,7 +8,7 @@ environment:
 skip_non_tags: false
 
 image:
-- Visual Studio 2015
+- Visual Studio 2019
 
 platform:
   - x64
