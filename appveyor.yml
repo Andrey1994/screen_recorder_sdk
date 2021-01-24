@@ -28,7 +28,6 @@ install:
   - pip install twine
 
 test_script:
-  - mkdir build64 && cd build64 && cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_VERSION=8.1 .. && cmake --build . --config Release -j 4 --parallel 4
   - python python\setup.py install
   - cd java\screen_recorder && mvn package
 
