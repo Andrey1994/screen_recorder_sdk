@@ -5,10 +5,10 @@ environment:
   GITHUB_TOKEN:
     secure: Q0/Pyd8J+EX6/zaOuWATGu2OvRBLz53SYEFejI91VFiPEOJ0KbyZl+2UdYSzniDI
 
-skip_non_tags: true
+skip_non_tags: false
 
 image:
-- Visual Studio 2015
+- Visual Studio 2017
 
 platform:
   - x64
@@ -22,13 +22,15 @@ build: off
 init:
   - cmd: set PATH=%PY_DIR%;%PY_DIR%\Scripts;%APPVEYOR_BUILD_FOLDER%\data\lib;%PATH%
   - cmd: set CNC_INSTALL_CNCA0_CNCB0_PORTS="YES"
+  - cmd: set SCREEN_RECORDER_SDK_VERSION=%APPVEYOR_REPO_TAG_NAME%
 
 install:
   - pip install twine
 
 test_script:
-  - cmake_build.cmd
+  - mkdir build64 && cd build64 && cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_SYSTEM_VERSION=8.1 .. && cmake --build . --config Release -j 4 --parallel 4
   - python python\setup.py install
+  - cd java\screen_recorder && mvn package
 
 after_test:
   - pip install wheel
@@ -40,7 +42,19 @@ artifacts:
     type: zip
 
 deploy_script:
-  - twine upload --skip-existing dist/*.whl --user Andrey1994 --password %PYPI_PASSWORD%
+  - ps: >-
+      If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_BRANCH -eq "master") {
+        cd $env:APPVEYOR_BUILD_FOLDER\python
+        twine upload --skip-existing dist/*.whl --user Andrey1994 --password %PYPI_PASSWORD%
+        cd $env:APPVEYOR_BUILD_FOLDER\java\screen_recorder
+        (gc .\pom.xml).replace('0.0.1-SNAPSHOT',$env:APPVEYOR_REPO_TAG_NAME) | Out-File -encoding ASCII pom.xml
+        (gc .\settings.xml).replace('USER','Andrey1994') | Out-File -encoding ASCII settings.xml
+        (gc .\settings.xml).replace('TOKEN',$env:GITHUB_TOKEN) | Out-File -encoding ASCII settings.xml
+        mvn -s $env:APPVEYOR_BUILD_FOLDER\java\screen_recorder\settings.xml deploy -Dregistry=https://maven.pkg.github.com/Andrey1994 -Dtoken=$env:GITHUB_TOKEN
+      }
+      Else {
+          write-output "Skip deployment for non tag"
+        }
 
 notifications:
   - provider: Email
