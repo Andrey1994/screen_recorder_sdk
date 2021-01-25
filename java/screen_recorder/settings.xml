@@ -29,7 +29,7 @@
         </repository>
 
         <repository>
-          <id>Andrey1994</id>
+          <id>github</id>
           <name>GitHub screen recorder Apache Maven Packages</name>
           <url>https://maven.pkg.github.com/Andrey1994/screen_recorder_sdk</url>
         </repository>
