@@ -27,6 +27,7 @@ init:
 
 install:
   - pip install twine
+  - pip install numpy==1.21.4
 
 test_script:
   - python python\setup.py install
