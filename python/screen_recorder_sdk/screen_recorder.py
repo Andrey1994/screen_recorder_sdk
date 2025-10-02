@@ -1,12 +1,10 @@
-import os
 import json
 import ctypes
 import numpy
-import enum
 import platform
 import struct
 from numpy.ctypeslib import ndpointer
-import pkg_resources
+import importlib.resources
 from PIL import Image
 from screen_recorder_sdk.exit_codes import RecorderExitCodes
 
@@ -57,8 +55,12 @@ class ScreenRecorderDLL (object):
         return cls.__instance
 
     def __init__ (self):
-
-        self.lib = ctypes.cdll.LoadLibrary (pkg_resources.resource_filename (__name__, os.path.join ('lib', 'ScreenRecorder.dll')))
+        try:
+            dll_path = importlib.resources.files(__package__).joinpath('lib', 'ScreenRecorder.dll')
+        except Exception:
+            import importlib.resources as resources
+            dll_path = resources.files('screen_recorder_sdk').joinpath('lib', 'ScreenRecorder.dll')
+        self.lib = ctypes.cdll.LoadLibrary(str(dll_path))
 
         self.InitResources = self.lib.InitResources
         self.InitResources.restype = ctypes.c_int

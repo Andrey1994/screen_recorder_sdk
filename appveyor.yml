@@ -27,15 +27,16 @@ init:
 
 install:
   - pip install twine
+  - pip install build
   - pip install numpy==1.18.4
 
 test_script:
-  - python python\setup.py install
+  - pip install python\.
   - cd java\screen_recorder && mvn package
 
 after_test:
   - pip install wheel
-  - cd python && python setup.py sdist bdist_wheel
+  - cd python && python -m build
 
 artifacts:
   - path: dist

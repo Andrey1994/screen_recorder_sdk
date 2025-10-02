@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel", "build"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "screen_recorder_sdk"
+dynamic = ["version"]
+description = "Library to take screenshots and record video from desktop"
+readme = "README.md"
+authors = [
+    { name = "Andrey Parfenov", email = "a1994ndrey@gmail.com" }
+]
+requires-python = ">=3.0"
+dependencies = [
+    "numpy",
+    "Pillow"
+]
+
+[project.urls]
+Homepage = "https://github.com/Andrey1994/screen_recorder_sdk"
+
+[tool.setuptools.packages.find]
+where = ["."]
